@@ -9,6 +9,7 @@ public class Program
             .Bind(builder.Configuration.GetSection(TracesOptions.Traces))
             .ValidateDataAnnotations();
 
+        builder.Services.AddSingleton<TracesManager>();
         builder.Services.AddLogging(config =>
         {
             config.AddEventProvider();

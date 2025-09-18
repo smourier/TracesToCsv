@@ -1,4 +1,4 @@
-﻿namespace TracesToCsv.Controllers;
+﻿namespace TracesToCsv;
 
 public enum TraceVersion
 {
