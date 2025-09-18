@@ -20,6 +20,7 @@ public sealed partial class EventProvider : IDisposable
     }
 
     public bool WriteMessageEvent(string text, byte level = 0, long keywords = 0) => EventWriteString(_handle, level, keywords, text) == 0;
+    public void WriteMessage(string? text = null, [CallerMemberName] string? methodName = null) => WriteMessageEvent(methodName + ":" + text);
 
     public void Dispose()
     {

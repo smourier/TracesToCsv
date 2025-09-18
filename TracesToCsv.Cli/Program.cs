@@ -11,7 +11,7 @@ internal class Program
 
         client.BaseAddress = new Uri("https://127.0.0.1:7020/traces/");
         var id = Guid.NewGuid();
-
+        Console.WriteLine("id:" + id);
 
         // get key
         var key = await client.GetStringAsync($"{id}/key");
@@ -26,7 +26,7 @@ internal class Program
                 timestamp = DateTimeOffset.UtcNow,
             };
             var content = JsonContent.Create(trace);
-            var response = await client.PutAsync($"{WebUtility.UrlEncode(key)}", content);
+            var response = await client.PutAsync($"{Uri.EscapeDataString(key)}", content);
 
             var str = await response.Content.ReadAsStringAsync();
             Console.WriteLine(str);

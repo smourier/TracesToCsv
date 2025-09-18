@@ -6,4 +6,7 @@ public class TracesOptions
 
     [Required(AllowEmptyStrings = false)]
     public string Password { get; set; } = null!;
+
+    [Range(1000, int.MaxValue)]
+    public int FlushTimeout { get; set; } = 1000;
 }

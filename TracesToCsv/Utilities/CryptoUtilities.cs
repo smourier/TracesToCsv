@@ -1,8 +1,4 @@
-﻿using System.IO;
-using System.Security.Cryptography;
-using System.Text;
-
-namespace TracesToCsv.Utilities;
+﻿namespace TracesToCsv.Utilities;
 
 public static class CryptoUtilities
 {
@@ -15,30 +11,22 @@ public static class CryptoUtilities
     public static string EncryptToString(string clearText, string password)
     {
         ArgumentNullException.ThrowIfNull(password);
-        try
-        {
-            if (!string.IsNullOrWhiteSpace(clearText))
-                return Convert.ToBase64String(Encrypt(clearText, password));
-        }
-        catch
-        {
-        }
-        return string.Empty;
+        if (string.IsNullOrWhiteSpace(clearText))
+            return string.Empty;
+
+        return Convert.ToBase64String(Encrypt(clearText, password));
     }
 
-    public static string Decrypt(string base64EncryptedText, string password)
+    public unsafe static string? Decrypt(string base64EncryptedText, string password, int maxSize)
     {
         ArgumentNullException.ThrowIfNull(password);
-        try
+        if (!string.IsNullOrWhiteSpace(base64EncryptedText))
         {
-            if (!string.IsNullOrWhiteSpace(base64EncryptedText))
-                return Decrypt(Convert.FromBase64String(base64EncryptedText), password);
+            Span<byte> bytes = stackalloc byte[maxSize];
+            if (Convert.TryFromBase64String(base64EncryptedText, bytes, out var written))
+                return Decrypt(bytes[..written].ToArray(), password);
         }
-        catch
-        {
-            // continue
-        }
-        return string.Empty;
+        return null;
     }
 
     public static byte[] Encrypt(string clearText, string password)
@@ -46,7 +34,7 @@ public static class CryptoUtilities
         ArgumentNullException.ThrowIfNull(clearText);
         ArgumentNullException.ThrowIfNull(password);
 
-        using Aes aes = Aes.Create();
+        using var aes = Aes.Create();
         aes.Key = Pbkdf2(password);
         aes.IV = _iv;
         using var ms = new MemoryStream();
@@ -56,19 +44,26 @@ public static class CryptoUtilities
         return ms.ToArray();
     }
 
-    public static string Decrypt(byte[] encrypted, string password)
+    public static string? Decrypt(byte[] encrypted, string password)
     {
         ArgumentNullException.ThrowIfNull(encrypted);
         ArgumentNullException.ThrowIfNull(password);
 
-        using Aes aes = Aes.Create();
+        using var aes = Aes.Create();
         aes.Key = Pbkdf2(password);
         aes.IV = _iv;
         using var input = new MemoryStream(encrypted);
-        using var crypto = new CryptoStream(input, aes.CreateDecryptor(), CryptoStreamMode.Read);
-        using var output = new MemoryStream();
-        crypto.CopyTo(output);
-        return Encoding.UTF8.GetString(output.ToArray());
+        try
+        {
+            using var crypto = new CryptoStream(input, aes.CreateDecryptor(), CryptoStreamMode.Read);
+            using var output = new MemoryStream();
+            crypto.CopyTo(output);
+            return Encoding.UTF8.GetString(output.ToArray());
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     // config is a bit down but we mostly care about perf, not super high security

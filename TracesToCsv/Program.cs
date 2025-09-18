@@ -21,6 +21,7 @@ public class Program
             });
 
         var app = builder.Build();
+        app.UseMiddleware<ApiExceptionHandlingMiddleware>();
         app.UseHttpsRedirection();
         app.UseAuthorization();
         app.MapControllers();
