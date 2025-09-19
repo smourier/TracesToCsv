@@ -3,7 +3,8 @@ An ASP.NET Core 9+ app that continuously digest simple traces sent from HTTP(S) 
 
 ## Features
 - Receives traces via HTTPS PUT requests
-- Parses JSON payloads containing trace data, converts trace data into CSV format and saves CSV files to a specified directory
+- Parses JSON payloads containing trace data, converts trace data into CSV format and saves CSV files to a specified server directory. Files are then easily downloadable.
+- Eazy traces categorization
 - Lightweight and easy to deploy (just run Publish)
 - Zero dependencies
 - Supports a per-trace custom dictionary mapped to dynamic CSV columns
@@ -93,6 +94,20 @@ if (!response.IsSuccessStatusCode)
     response.EnsureSuccessStatusCode();
 }
 ```
+Here is the result when connecting to the server:
+
+<img width="874" height="352" alt="CSV Traces" src="https://github.com/user-attachments/assets/f50d0377-d9c8-484c-81cf-71072cd6e3dc" />
 
 ### Categorization
-TracesToCsv has a feature that allows you to categorize traces using relative path. So for example if you PUT the traces to `https://localhost:7020/traces/<id>/cat1/cat2` then the CSV file that will contain this trace will be put in a sub directory:
+TracesToCsv has a feature that allows you to categorize traces using relative path. So for example if you PUT the traces to `https://localhost:7020/traces/<id>/cat1/cat2` then the CSV file that will contain this trace will be put in a sub directory.
+
+So if the C# code is written like this:
+
+```csharp
+var response = await client.PutAsync(url + "/cat/cat2", content);
+```
+
+Then one can navigate cat1 and cat2 categories like server sub folders:
+
+<img width="886" height="383" alt="Categorization" src="https://github.com/user-attachments/assets/a1bafcf5-85a1-4c04-942b-ed430aeb2efa" />
+
