@@ -15,7 +15,4 @@ public class TracesOptions
 
     [Required(AllowEmptyStrings = false)]
     public string DirectoryPath { get; set; } = "Traces";
-
-    [Required(AllowEmptyStrings = false)]
-    public string FileFormat { get; set; } = "{1}_{0:yyyy}_{0:MM}_{0:dd}.csv";
 }

@@ -1,6 +1,6 @@
 ﻿namespace TracesToCsv.Utilities;
 
-public static class Extensions
+public static class StringUtilities
 {
     public static bool EqualsIgnoreCase(this string? thisString, string? text, bool trim = true, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
     {

@@ -9,6 +9,7 @@
 
 	<ItemGroup>
 		<Using Include="System" />
+		<Using Include="System.Collections.Concurrent" />
 		<Using Include="System.Net" />
 		<Using Include="System.Net.Http" />
 		<Using Include="System.Net.Http.Json" />

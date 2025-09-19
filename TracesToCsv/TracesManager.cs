@@ -75,47 +75,44 @@ public sealed class TracesManager(
         this.LogInformation($"guid: {guid} bag: {traces.Count} task id: {taskId}");
         // this runs on one thread only, ie: one file is written only by one thread
 
-        // order traces by category
-
-        try
+        // order traces by category (intermediate path)
+        foreach (var group in traces.GroupBy(t => t.Category))
         {
-            var name = string.Format(options.Value.FileFormat,
-                DateTime.Now,
-                Environment.MachineName,
-                Environment.UserName,
-                Environment.UserDomainName,
-                Path.GetFileNameWithoutExtension(Environment.ProcessPath),
-                Guid.NewGuid(),
-                Environment.TickCount64);
-
-            var directoryPath = Path.GetFullPath(options.Value.DirectoryPath);
-            var path = Path.Combine(directoryPath, guid.ToString("N"), name);
-
-            IOUtilities.FileCreateDirectory(path);
-            var i = 0;
-            using var writer = new StreamWriter(path, true, Encoding.Unicode);
-            var writerHeader = writer.BaseStream.Position == 0;
-            foreach (var trace in traces.OrderByDescending(t => t.Trace.Timestamp))
+            try
             {
-                if (i == 0 && writerHeader)
-                {
-                    trace.WriteHeader(writer);
-                    writer.WriteLine();
-                    i++;
-                }
+                var category = group.Key;
 
-                trace.Write(writer);
-                writer.WriteLine();
+                var dt = DateTime.UtcNow;
+                var name = $"{dt:yyyy}_{dt:MM}_{dt:dd}.csv";
+                var directoryPath = Path.GetFullPath(options.Value.DirectoryPath);
+                var path = Path.Combine(directoryPath, guid.ToString("N"), category, name);
+                IOUtilities.FileCreateDirectory(path);
+
+                var i = 0;
+                using var writer = new StreamWriter(path, true, Encoding.Unicode);
+                var writerHeader = writer.BaseStream.Position == 0;
+                foreach (var trace in group.OrderBy(t => t.Trace.Timestamp))
+                {
+                    if (i == 0 && writerHeader)
+                    {
+                        trace.WriteHeader(writer);
+                        writer.WriteLine();
+                        i++;
+                    }
+
+                    trace.Write(writer);
+                    writer.WriteLine();
+                }
+                writer.Flush();
             }
-            writer.Flush();
-        }
-        catch (Exception ex)
-        {
-            this.LogError("Error: " + ex);
-        }
-        finally
-        {
-            _flushTasks.Remove(taskId, out _);
+            catch (Exception ex)
+            {
+                this.LogError("Error: " + ex);
+            }
+            finally
+            {
+                _flushTasks.Remove(taskId, out _);
+            }
         }
     }
 }
