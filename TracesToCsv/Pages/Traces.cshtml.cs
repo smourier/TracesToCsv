@@ -6,6 +6,7 @@ public class TracesModel(TracesManager manager, ILogger<TracesModel> logger)
     ILogger<TracesModel>? ILoggable<TracesModel>.Logger { get; } = logger;
 
     public string Key { get; private set; } = null!;
+    public Guid Id { get; private set; }
     public TraceFolder Folder { get; private set; } = null!;
 
     public ActionResult OnGet(Guid id, string? url = null)
@@ -15,6 +16,7 @@ public class TracesModel(TracesManager manager, ILogger<TracesModel> logger)
         if (entry == null)
             return NotFound();
 
+        Id = id;
         if (entry is TraceFolder folder)
         {
             Folder = folder;

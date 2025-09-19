@@ -9,6 +9,9 @@ public sealed class TracesController(
 {
     ILogger<TracesController>? ILoggable<TracesController>.Logger { get; } = logger;
 
+    [HttpGet("{id}/key")]
+    public string Key(Guid id) => manager.GetKey(id);
+
     [HttpPut("{key}")]
     public unsafe string AddTrace(string key, [FromBody] Trace trace)
     {

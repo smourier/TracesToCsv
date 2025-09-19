@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 
 namespace TracesToCsv.Cli;
@@ -12,7 +13,7 @@ internal class Program
             ServerCertificateCustomValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
         })
         {
-            BaseAddress = new Uri("https://127.0.0.1:7020/traces/")
+            BaseAddress = new Uri("https://127.0.0.1:7020/Traces/")
         };
 
         var ids = new ConcurrentDictionary<Guid, string>();
@@ -53,6 +54,8 @@ internal class Program
                             { "decimal", 1234.5678m }
                         }
                     };
+
+                    Console.WriteLine(JsonSerializer.Serialize(trace, options: new JsonSerializerOptions { WriteIndented = true }));
                     var content = JsonContent.Create(trace);
                     var response = await client.PutAsync($"{Uri.EscapeDataString(kv.Value)}", content);
                     if (!response.IsSuccessStatusCode)
