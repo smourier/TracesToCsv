@@ -19,30 +19,46 @@
             font-size: 14px;
         }
 
+        #help {
+            display: none;
+        }
+
+        #show:target #help {
+            display: inline-block;
+        }
+
+        #show:target #show {
+            display: none;
+        }
     </style>
 </head>
 <body>
 
-    @if (Model.Folder.IsRoot)
-    {
-        <p>Traces To CSV id @Model.Id.ToString("N"), API Key: @Model.Key</p>
-        <p>To create a trace, PUT a JSON object to "http://server/traces/&lt;API Key&gt;" using this JSON schema:</p>
-        <pre>
+    <h1>Traces To CSV </h1>
+    <hr />
+
+    <div id="show">
+        <a href="#show" id="show">Show Help</a>
+        <div id="help">
+            <a href="#hide" id="hide">Hide Help</a>
+            <p>id @Model.Id.ToString("N"), API Key: @Model.Key</p>
+            <p>To create a trace, PUT a JSON object to "http://server/traces/&lt;API Key&gt/subPaths" (subPaths are optional) using this JSON schema:</p>
+            <pre>
 {
-    "version": 1,     // always 1
-    "level": "info",  // "error" or 1, "warning" or 2, "info" or 3, "verbose" or 4
-    "category": "",   // whatever, nothing means the trace will be copied to the root
-    "message": "...", // whatever
-    "values": {       // a dictionary
+    "version": 1,      // required. currently set to 1
+    "level": "info",   // required. level of trace, can be "error" or 1, "warning" or 2, "info" or 3, "verbose" or 4
+    "message": "blah", // optional. a message
+    "values": {        // optional. a dictionary of values
         "some bool": true,
         "a value": 1234.5677,
         "dummy": "hello world"
     },
-    "timestamp": "2025-09-19T11:13:53.6160989+00:00",
-}</pre>
-        <hr />
-    }
+    "timestamp": "2025-09-19T11:13:53.6160989+00:00", // required. client timestamp
+}
 
+Soon after JSON digestion, a CSV file will be created or appended with new traces. The server responds to trace creation with an id (string) that you can correlate with a line in resulting CSV file.</pre>
+        </div>
+    </div>
     <div>
         <table id="traces" class="table table-striped display compact">
             <thead>

@@ -12,8 +12,8 @@ public sealed class TracesController(
     [HttpGet("{id}/key")]
     public string Key(Guid id) => manager.GetKey(id);
 
-    [HttpPut("{key}")]
-    public unsafe string AddTrace(string key, [FromBody] Trace trace)
+    [HttpPut("{key}/{*url}")]
+    public unsafe string AddTrace(string key, string? url, [FromBody] Trace trace)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         ArgumentNullException.ThrowIfNull(trace);
@@ -26,6 +26,7 @@ public sealed class TracesController(
         if (!Guid.TryParse(guid, out var userId))
             throw new ArgumentException(null, nameof(key));
 
+        trace.Category ??= url;
         var st = new ServerTrace(trace);
         manager.Add(userId, st);
         return st.Id.ToString("N");

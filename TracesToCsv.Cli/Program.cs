@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Text.Json;
 using System.Threading;
 
 namespace TracesToCsv.Cli;
@@ -42,7 +41,6 @@ internal class Program
                     {
                         version = 1,
                         level = "info",
-                        category = "",
                         timestamp = DateTimeOffset.UtcNow,
                         message = $"{kv.Key} #{idx}",
                         values = new Dictionary<string, object>()
@@ -55,9 +53,9 @@ internal class Program
                         }
                     };
 
-                    Console.WriteLine(JsonSerializer.Serialize(trace, options: new JsonSerializerOptions { WriteIndented = true }));
+                    //Console.WriteLine(JsonSerializer.Serialize(trace, options: new JsonSerializerOptions { WriteIndented = true }));
                     var content = JsonContent.Create(trace);
-                    var response = await client.PutAsync($"{Uri.EscapeDataString(kv.Value)}", content);
+                    var response = await client.PutAsync($"{Uri.EscapeDataString(kv.Value)}/{DateTime.Now:t}", content);
                     if (!response.IsSuccessStatusCode)
                     {
                         var str = await response.Content.ReadAsStringAsync();
