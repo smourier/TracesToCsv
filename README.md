@@ -4,7 +4,7 @@ An ASP.NET Core 9+ app that continuously digest simple traces sent from HTTP(S) 
 ## Features
 - Receives traces via HTTPS PUT requests
 - Parses JSON payloads containing trace data, converts trace data into CSV format and saves CSV files to a specified directory
-- Lightweight and easy to deploy
+- Lightweight and easy to deploy (just run Publish)
 - Zero dependencies
 - Supports a per-trace custom dictionary mapped to dynamic CSV columns
 
@@ -30,17 +30,27 @@ The JSON payload format should be like this:
         "etc.": "..."
     }
 }
-
 ```
 ### Getting an API Key
 To use a service you need an identifier ("id") that is a Guid. Once you have generated a Guid, just connect to 
-https://localhost:7020/traces/&lt;id&gt, for example https://localhost:7020/traces/733eb60f-2ef1-4444-8660-93a64d6b8a41 and you will see this (click on *Show Help*):
+`https://localhost:7020/traces/<id>`, for example https://localhost:7020/traces/733eb60f2ef14444866093a64d6b8a41 and you will see this (click on *Show Help*):
 
+<img width="907" height="125" alt="Show Help" src="https://github.com/user-attachments/assets/9cba8871-482b-466a-b6a7-4a0a96ac3ba7" />
 
+So, as we can see, the API Key for this id is `iElBVk8qlQd5h3nmXdbu8DNLGUH3AlJHHPAiNGb0eLvaM9Roxf7s556hUNzX4nk6` this is how we can send traces to the server and they will be associated with the id above.
+> The API Key is not super secret, the id (the Guid) is more since this is the one that allows anyone to see related CSV files. So you shouldn't communicate the id to anyone nor embed it in your code.
 
+### Server configuration
+You can change the appsettings.json with a password of your choice:
 
-
-### Categorization
+```json
+{
+  "Traces": {
+    "Password": "put_your_password_here"
+  }
+}
+```
+This password is a server-side only thing that is used to build all API Keys from guids. If you change it all API keys will change, so once you've defined it you shouldn't change it.
 
 ### C# sample Code
 
@@ -82,3 +92,7 @@ if (!response.IsSuccessStatusCode)
     Console.WriteLine(str);
     response.EnsureSuccessStatusCode();
 }
+```
+
+### Categorization
+TracesToCsv has a feature that allows you to categorize traces using relative path. So for example if you PUT the traces to `https://localhost:7020/traces/<id>/cat1/cat2` then the CSV file that will contain this trace will be put in a sub directory:
