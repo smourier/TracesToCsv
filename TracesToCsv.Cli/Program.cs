@@ -15,7 +15,6 @@ internal class Program
         {
             DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher,
             BaseAddress = new Uri("https://127.0.0.1:7020/Traces/")
-            //BaseAddress = new Uri("https://tracer-dngtc6cccjghguh0.centralus-01.azurewebsites.net/traces/")
         };
 
         var ids = new ConcurrentDictionary<Guid, string>();
