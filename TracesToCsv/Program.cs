@@ -26,6 +26,7 @@ public class Program
         app.UseMiddleware<ApiExceptionHandlingMiddleware>();
         app.UseHttpsRedirection();
         app.UseAuthorization();
+        app.UseStaticFiles();
         app.MapControllers();
         app.MapRazorPages();
         app.Run();
