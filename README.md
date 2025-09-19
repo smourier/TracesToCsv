@@ -1,24 +1,23 @@
 # TracesToCsv
-An ASP.NET Core 9+ app that continuously digest simple traces sent from HTTP(S) clients and creates CSV files from them.
+An ASP.NET Core 9+ application that continuously ingests lightweight trace payloads sent over HTTP(S) and converts them into downloadable CSV files.
 
 ## Features
-- Receives traces via HTTPS PUT requests
-- Parses JSON payloads containing trace data, converts trace data into CSV format and saves CSV files to a specified server directory. Files are then easily downloadable.
-- Eazy traces categorization
-- Lightweight and easy to deploy (just run Publish)
-- Zero dependencies
-- Supports a per-trace custom dictionary mapped to dynamic CSV columns
+- Accepts traces via HTTPS PUT requests
+- Reads JSON trace payloads, converts them to CSV rows, and stores them in a server-side folder
+- Simple hierarchical categorization of traces using URL path segments
+- Minimal footprint: publish and run
+- No third-party dependencies
+- Supports per-trace dynamic key/value pairs mapped to expandable CSV columns
 
 ## Use cases
-- Collecting traces from any type of clients in a centralized location
-- Debugging and troubleshooting applications by examining trace data
-- Analyzing trace data using spreadsheet software or other tools that support CSV format
- 
-## How to use
-The application starts listening for incoming HTTP PUT requests on the specified port, default is https://localhost:7020.
+- Centralized collection of diagnostic or telemetry traces from diverse clients
+- Application troubleshooting by inspecting structured trace history
+- Offline analysis in spreadsheets or any CSV-compatible tooling
 
-Send trace data to application using HTTP PUT requests with JSON payloads.
-The JSON payload format should be like this:
+## How to use
+The app listens for HTTPS PUT requests on the configured port (default: https://localhost:7020).
+
+Send trace data as JSON in the following shape:
 ```json
 {
     "timestamp": "2025-09-19T11:13:53.6160989+00:00", // required. client timestamp
@@ -33,16 +32,16 @@ The JSON payload format should be like this:
 }
 ```
 ### Getting an API Key
-To use a service you need an identifier ("id") that is a Guid. Once you have generated a Guid, just connect to 
-`https://localhost:7020/traces/<id>`, for example https://localhost:7020/traces/733eb60f2ef14444866093a64d6b8a41 and you will see this (click on *Show Help*):
+Generate a Guid to serve as the trace identifier (the "id"). This guid is yours and yours only. Visit  
+`https://localhost:7020/traces/<id>` (example: https://localhost:7020/traces/733eb60f2ef14444866093a64d6b8a41) and open *Show Help*.
 
 <img width="907" height="125" alt="Show Help" src="https://github.com/user-attachments/assets/9cba8871-482b-466a-b6a7-4a0a96ac3ba7" />
 
-So, as we can see, the API Key for this id is `iElBVk8qlQd5h3nmXdbu8DNLGUH3AlJHHPAiNGb0eLvaM9Roxf7s556hUNzX4nk6` this is how we can send traces to the server and they will be associated with the id above.
-> The API Key is not super secret, the id (the Guid) is more since this is the one that allows anyone to see related CSV files. So you shouldn't communicate the id to anyone nor embed it in your code.
+The displayed API Key (example: `iElBVk8qlQd5h3nmXdbu8DNLGUH3AlJHHPAiNGb0eLvaM9Roxf7s556hUNzX4nk6`) is what clients use to submit traces associated with that Guid.  
+> Treat the Guid more carefully than the API Key: possession of the Guid allows browsing of the related CSV output. Avoid embedding the Guid directly in distributed binaries or sharing it publicly.
 
 ### Server configuration
-You can change the appsettings.json with a password of your choice:
+Configure a server-side password in `appsettings.json`:
 
 ```json
 {
@@ -51,7 +50,7 @@ You can change the appsettings.json with a password of your choice:
   }
 }
 ```
-This password is a server-side only thing that is used to build all API Keys from guids. If you change it all API keys will change, so once you've defined it you shouldn't change it.
+This password is used to derive API Keys from their Guids. Changing it later invalidates previously issued API Keys, so pick a value early and keep it stable.
 
 ### C# sample Code
 
@@ -99,15 +98,10 @@ Here is the result when connecting to the server:
 <img width="874" height="352" alt="CSV Traces" src="https://github.com/user-attachments/assets/f50d0377-d9c8-484c-81cf-71072cd6e3dc" />
 
 ### Categorization
-TracesToCsv has a feature that allows you to categorize traces using relative path. So for example if you PUT the traces to `https://localhost:7020/traces/<id>/cat1/cat2` then the CSV file that will contain this trace will be put in a sub directory.
+You can categorize traces by appending path segments: `https://localhost:7020/traces/<id>/cat1/cat2`. The server places the resulting CSV into a matching subdirectory structure.
 
-So if the C# code is written like this:
-
-```csharp
-var response = await client.PutAsync(url + "/cat/cat2", content);
-```
-
-Then one can navigate cat1 and cat2 categories like server sub folders:
+Example client call:
+Result: the UI exposes `cat` and `cat2` like nested folders.
 
 <img width="886" height="383" alt="Categorization" src="https://github.com/user-attachments/assets/a1bafcf5-85a1-4c04-942b-ed430aeb2efa" />
 
