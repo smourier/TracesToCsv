@@ -1,6 +1,4 @@
-﻿using System.Xml.Linq;
-
-namespace TracesToCsv;
+﻿namespace TracesToCsv;
 
 public sealed class TracesManager(
     IOptions<TracesOptions> options,

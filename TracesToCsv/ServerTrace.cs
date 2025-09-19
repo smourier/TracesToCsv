@@ -15,7 +15,6 @@ public sealed class ServerTrace(Trace trace)
         writer.WriteCsvCell(nameof(Id));
         writer.WriteCsvCell(nameof(ReceivedUtcDate));
         writer.WriteCsvCell(nameof(Category));
-        writer.WriteCsvCell(nameof(Trace.Version));
         writer.WriteCsvCell(nameof(Trace.Level));
         writer.WriteCsvCell(nameof(Trace.Timestamp));
         writer.WriteCsvCell("TraceId");
@@ -44,7 +43,6 @@ public sealed class ServerTrace(Trace trace)
         writer.WriteCsvCell(Id.ToString("N"));
         writer.WriteCsvCell(ReceivedUtcDate.ToString("O"));
         writer.WriteCsvCell(Category);
-        writer.WriteCsvCell(Trace.Version.ToString());
         writer.WriteCsvCell(Trace.Level.ToString());
         writer.WriteCsvCell(Trace.Timestamp.ToString("O"));
         writer.WriteCsvCell(Trace.Id?.ToString());

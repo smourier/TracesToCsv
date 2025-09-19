@@ -2,7 +2,6 @@
 
 public sealed class Trace
 {
-    public required TraceVersion Version { get; set; }
     public required TraceLevel Level { get; set; }
     public required DateTimeOffset Timestamp { get; set; }
     public string? Category { get; set; }

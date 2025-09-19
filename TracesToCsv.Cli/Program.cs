@@ -39,7 +39,6 @@ internal class Program
                     // get key
                     var trace = new
                     {
-                        version = 1,
                         level = "info",
                         timestamp = DateTimeOffset.UtcNow,
                         message = $"{kv.Key} #{idx}",
@@ -53,7 +52,6 @@ internal class Program
                         }
                     };
 
-                    //Console.WriteLine(JsonSerializer.Serialize(trace, options: new JsonSerializerOptions { WriteIndented = true }));
                     var content = JsonContent.Create(trace);
                     var response = await client.PutAsync($"{Uri.EscapeDataString(kv.Value)}/{DateTime.Now:t}", content);
                     if (!response.IsSuccessStatusCode)
