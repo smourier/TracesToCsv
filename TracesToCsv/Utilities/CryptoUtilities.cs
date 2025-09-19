@@ -14,7 +14,8 @@ public static class CryptoUtilities
         if (string.IsNullOrWhiteSpace(clearText))
             return string.Empty;
 
-        return Convert.ToBase64String(Encrypt(clearText, password));
+        // https://www.rfc-editor.org/rfc/rfc4648.txt
+        return Convert.ToBase64String(Encrypt(clearText, password)).Replace('+', '-').Replace('/', '_');
     }
 
     public unsafe static string? Decrypt(string base64EncryptedText, string password, int maxSize)
@@ -22,8 +23,9 @@ public static class CryptoUtilities
         ArgumentNullException.ThrowIfNull(password);
         if (!string.IsNullOrWhiteSpace(base64EncryptedText))
         {
+            // https://www.rfc-editor.org/rfc/rfc4648.txt
             Span<byte> bytes = stackalloc byte[maxSize];
-            if (Convert.TryFromBase64String(base64EncryptedText, bytes, out var written))
+            if (Convert.TryFromBase64String(base64EncryptedText.Replace('-', '+').Replace('_', '/'), bytes, out var written))
                 return Decrypt(bytes[..written].ToArray(), password);
         }
         return null;

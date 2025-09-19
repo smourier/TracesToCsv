@@ -9,10 +9,13 @@ internal class Program
     {
         var client = new HttpClient(new HttpClientHandler
         {
+            MaxConnectionsPerServer = int.MaxValue,
             ServerCertificateCustomValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
         })
         {
+            DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher,
             BaseAddress = new Uri("https://127.0.0.1:7020/Traces/")
+            //BaseAddress = new Uri("https://tracer-dngtc6cccjghguh0.centralus-01.azurewebsites.net/traces/")
         };
 
         var ids = new ConcurrentDictionary<Guid, string>();
@@ -53,7 +56,8 @@ internal class Program
                     };
 
                     var content = JsonContent.Create(trace);
-                    var response = await client.PutAsync($"{Uri.EscapeDataString(kv.Value)}/{DateTime.Now:t}", content);
+                    var url = new Uri($"{kv.Value}/{DateTime.Now:t}", UriKind.Relative);
+                    var response = await client.PutAsync(url, content);
                     if (!response.IsSuccessStatusCode)
                     {
                         var str = await response.Content.ReadAsStringAsync();

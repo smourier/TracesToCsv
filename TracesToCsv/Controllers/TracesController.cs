@@ -18,11 +18,7 @@ public sealed class TracesController(
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         ArgumentNullException.ThrowIfNull(trace);
 
-        Span<char> chars = stackalloc char[128];
-        if (!Uri.TryUnescapeDataString(key, chars, out var written))
-            throw new ArgumentException(null, nameof(key));
-
-        var guid = CryptoUtilities.Decrypt(chars[..written].ToString(), options.Value.Password, 64); // validate key
+        var guid = CryptoUtilities.Decrypt(key, options.Value.Password, 128); // validate key
         if (!Guid.TryParse(guid, out var userId))
             throw new ArgumentException(null, nameof(key));
 
