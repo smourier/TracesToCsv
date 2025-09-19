@@ -9,17 +9,8 @@ public sealed class TracesController(
 {
     ILogger<TracesController>? ILoggable<TracesController>.Logger { get; } = logger;
 
-    [HttpGet("{id}")]
-    public string Get(Guid id)
-    {
-        return id.ToString("N");
-    }
-
-    [HttpGet("{id}/key")]
-    public string Key(Guid id) => CryptoUtilities.EncryptToString(id.ToString("N"), options.Value.Password);
-
     [HttpPut("{key}")]
-    public unsafe string Create(string key, [FromBody] Trace trace)
+    public unsafe string AddTrace(string key, [FromBody] Trace trace)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         ArgumentNullException.ThrowIfNull(trace);

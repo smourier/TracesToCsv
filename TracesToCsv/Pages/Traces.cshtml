@@ -1,0 +1,56 @@
+﻿@page "{id}/{*url}"
+@using TracesToCsv
+@model TracesToCsv.Pages.TracesModel
+@{
+}
+
+<div>
+    <table class="display">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Length</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Folder.IsRoot)
+            {
+                <tr>
+                    <td><a href="/Traces/@Model.Folder.ParentFullName">[parent]</a></td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+            }
+
+            @foreach (var item in Model.Folder.Entries.Order())
+            {
+                <tr>
+                    @if (item is TraceFile file)
+                    {
+                        <td><a href="/Traces/@item.FullName">@item.Name</a></td>
+                        <td>@file.Length</td>
+                        <td nowrap>@file.LastWriteTimeUtc</td>
+                    }
+                    else
+                    {
+                        <td><a href="/Traces/@item.FullName">@item.Name</a></td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+
+@*     <script type="text/javascript">
+        $(document).ready(function () {
+            var table = $('.ma-Table').DataTable({
+                "order": [],
+                "pageLength": 100
+            });
+        });
+
+    </script>
+ *@</div>
+

@@ -9,6 +9,7 @@ public class Program
             .Bind(builder.Configuration.GetSection(TracesOptions.Traces))
             .ValidateDataAnnotations();
 
+        builder.Services.AddRazorPages();
         builder.Services.AddSingleton<TracesManager>();
         builder.Services.AddLogging(config =>
         {
@@ -26,7 +27,7 @@ public class Program
         app.UseHttpsRedirection();
         app.UseAuthorization();
         app.MapControllers();
-
+        app.MapRazorPages();
         app.Run();
     }
 }

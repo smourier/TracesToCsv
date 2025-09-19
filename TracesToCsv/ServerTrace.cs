@@ -5,17 +5,7 @@ public sealed class ServerTrace(Trace trace)
     public Trace Trace { get; } = trace;
     public DateTimeOffset ReceivedUtcDate { get; } = DateTimeOffset.UtcNow;
     public Guid Id { get; } = Guid.NewGuid();
-    public string Category { get; } = ComputeSafeCategory(trace);
-
-    private static string ComputeSafeCategory(Trace trace)
-    {
-        var category = trace.Category.Nullify();
-        if (category == null)
-            return string.Empty;
-
-        var segments = category.Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries);
-        return string.Join('\\', segments.Select(s => IOUtilities.NameToValidFileName(s) ?? string.Empty));
-    }
+    public string Category { get; } = TracesManager.ComputeSafeCategory(trace.Category);
 
     internal void WriteHeader(TextWriter writer)
     {

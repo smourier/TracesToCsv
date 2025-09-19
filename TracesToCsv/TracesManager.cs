@@ -1,4 +1,6 @@
-﻿namespace TracesToCsv;
+﻿using System.Xml.Linq;
+
+namespace TracesToCsv;
 
 public sealed class TracesManager(
     IOptions<TracesOptions> options,
@@ -28,6 +30,54 @@ public sealed class TracesManager(
         _mainTimer.Change(options.Value.FlushTimeout, 0);
     }
 
+    public string DirectoryPath { get; } = Path.GetFullPath(options.Value.DirectoryPath);
+
+    public string GetKey(Guid id)
+    {
+        if (id == Guid.Empty)
+            throw new ArgumentException(null, nameof(id));
+
+        return CryptoUtilities.EncryptToString(id.ToString("N"), options.Value.Password);
+    }
+
+    public TraceEntry? GetEntry(Guid id, string url)
+    {
+        ArgumentNullException.ThrowIfNull(url);
+
+        var relativePath = ComputeSafeCategory(url) ?? string.Empty;
+        var root = relativePath.Length == 0;
+
+        var name = id.ToString("N");
+        var path = Path.Combine(DirectoryPath, name, relativePath);
+        var fullName = Path.Combine(name, relativePath);
+        var parentFullName = root ? string.Empty : Path.GetDirectoryName(Path.Combine(name, relativePath))!;
+
+        // we currently only support csv files download
+        var ext = Path.GetExtension(path);
+        if (ext.EqualsIgnoreCase(".csv"))
+        {
+            var fi = new FileInfo(path);
+            if (!fi.Exists)
+                return null;
+
+            return new TraceFile
+            {
+                FullName = fullName,
+                LastWriteTimeUtc = fi.LastWriteTimeUtc,
+                Length = fi.Length,
+                ParentFullName = parentFullName,
+                FilePath = path
+            };
+        }
+
+        var folder = new TraceFolder { FullName = fullName, IsRoot = root, ParentFullName = parentFullName };
+        if (!Directory.Exists(path))
+            return root ? folder : null;
+
+        Build(folder, path);
+        return folder;
+    }
+
     public void Dispose()
     {
         var sw = Stopwatch.StartNew();
@@ -35,6 +85,51 @@ public sealed class TracesManager(
         var array = _flushTasks.Values.ToArray();
         var ret = Task.WaitAll(array, options.Value.DisposeTimeout);
         this.LogInformation($"tasks: {array.Length} ret: {ret} elapsed: {sw.Elapsed}");
+    }
+
+    private void Build(TraceFolder parent, string path)
+    {
+        try
+        {
+            var options = new EnumerationOptions();
+            foreach (var dir in Directory.EnumerateDirectories(path, "*", options))
+            {
+                var child = new TraceFolder
+                {
+                    FullName = Path.Combine(parent.FullName, Path.GetFileName(dir)),
+                    IsRoot = false,
+                    ParentFullName = parent.FullName
+                };
+                parent.Entries.Add(child);
+            }
+
+            foreach (var file in Directory.EnumerateFiles(path, "*.csv", options))
+            {
+                var fi = new FileInfo(file);
+                var child = new TraceFile
+                {
+                    FullName = Path.Combine(parent.FullName, fi.Name),
+                    LastWriteTimeUtc = fi.LastWriteTimeUtc,
+                    Length = fi.Length,
+                    ParentFullName = parent.FullName
+                };
+                parent.Entries.Add(child);
+            }
+        }
+        catch (Exception ex)
+        {
+            this.LogError("Error: " + ex);
+        }
+    }
+
+    internal static string ComputeSafeCategory(string? category)
+    {
+        category = category.Nullify();
+        if (category == null)
+            return string.Empty;
+
+        var segments = category.Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries);
+        return string.Join('\\', segments.Select(s => IOUtilities.NameToValidFileName(s) ?? string.Empty));
     }
 
     private void FlushTraces(object? state)
@@ -84,8 +179,7 @@ public sealed class TracesManager(
 
                 var dt = DateTime.UtcNow;
                 var name = $"{dt:yyyy}_{dt:MM}_{dt:dd}.csv";
-                var directoryPath = Path.GetFullPath(options.Value.DirectoryPath);
-                var path = Path.Combine(directoryPath, guid.ToString("N"), category, name);
+                var path = Path.Combine(DirectoryPath, guid.ToString("N"), category, name);
                 IOUtilities.FileCreateDirectory(path);
 
                 var i = 0;

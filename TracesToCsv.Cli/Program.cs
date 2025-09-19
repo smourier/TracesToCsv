@@ -10,9 +10,10 @@ internal class Program
         var client = new HttpClient(new HttpClientHandler
         {
             ServerCertificateCustomValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
-        });
-
-        client.BaseAddress = new Uri("https://127.0.0.1:7020/traces/");
+        })
+        {
+            BaseAddress = new Uri("https://127.0.0.1:7020/traces/")
+        };
 
         var ids = new ConcurrentDictionary<Guid, string>();
         for (var i = 1; i <= 10; i++)
