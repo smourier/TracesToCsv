@@ -98,10 +98,15 @@ Here is the result when connecting to the server:
 <img width="874" height="352" alt="CSV Traces" src="https://github.com/user-attachments/assets/f50d0377-d9c8-484c-81cf-71072cd6e3dc" />
 
 ### Categorization
-You can categorize traces by appending path segments: `https://localhost:7020/traces/<id>/cat1/cat2`. The server places the resulting CSV into a matching subdirectory structure.
+You can categorize traces by appending path segments: `https://localhost:7020/traces/<id>/cat/cat2`. The server places the resulting CSV into a matching subdirectory structure.
 
 Example client call:
-Result: the UI exposes `cat` and `cat2` like nested folders.
+
+```csharp
+var response = await client.PutAsync(url + "/cat/cat2", content);
+```
+
+Result: the UI understands `cat` and `cat2` in url like nested "folders".
 
 <img width="886" height="383" alt="Categorization" src="https://github.com/user-attachments/assets/a1bafcf5-85a1-4c04-942b-ed430aeb2efa" />
 
