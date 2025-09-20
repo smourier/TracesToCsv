@@ -12,6 +12,13 @@ public sealed class TracesController(
     [HttpGet("{id}/key")]
     public string Key(Guid id) => manager.GetKey(id);
 
+    [HttpPost("delete/{id}/{*url}")]
+    public unsafe int Delete(Guid id, string? url, [FromBody] IReadOnlyList<string> names)
+    {
+        ArgumentNullException.ThrowIfNull(names);
+        return manager.Delete(id, url ?? string.Empty, names);
+    }
+
     [HttpPut("{key}/{*url}")]
     public unsafe string AddTrace(string key, string? url, [FromBody] Trace trace)
     {

@@ -10,8 +10,14 @@
     <title>Traces To Csv</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="//cdn.datatables.net/2.3.4/css/dataTables.dataTables.min.css" />
+    <link rel="stylesheet" href="//cdn.datatables.net/buttons/3.2.5/css/buttons.dataTables.min.css" />
+    <link rel="stylesheet" href="//cdn.datatables.net/select/3.1.0/css/select.dataTables.min.css" />
     <script src="//code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="//cdn.datatables.net/2.3.4/js/dataTables.min.js"></script>
+    <script src="//cdn.datatables.net/select/3.1.0/js/dataTables.select.min.js"></script>
+    <script src="//cdn.datatables.net/select/3.1.0/js/select.dataTables.min.js"></script>
+    <script src="//cdn.datatables.net/buttons/3.2.5/js/dataTables.buttons.min.js"></script>
+    <script src="//cdn.datatables.net/buttons/3.2.5/js/buttons.dataTables.min.js"></script>
     <style>
         body {
             margin: 20px;
@@ -63,6 +69,7 @@ The server responds to trace creation with an id (string) that you can correlate
         <table id="traces" class="table table-striped display compact">
             <thead>
                 <tr>
+                    <th>Id</th>
                     <th>Name</th>
                     <th>Length</th>
                     <th>Date</th>
@@ -72,6 +79,7 @@ The server responds to trace creation with an id (string) that you can correlate
                 @if (!Model.Folder.IsRoot)
                 {
                     <tr>
+                        <td>&nbsp;</td>
                         <td><a href="/Traces/@Model.Folder.ParentFullName">..</a></td>
                         <td>&nbsp;</td>
                         <td>&nbsp;</td>
@@ -81,6 +89,7 @@ The server responds to trace creation with an id (string) that you can correlate
                 @foreach (var item in Model.Folder.Entries.Order())
                 {
                     <tr>
+                        <th>@item.Name</th>
                         @if (item is TraceFile file)
                         {
                             <td><a href="/Traces/@item.FullName">@item.Name</a></td>
@@ -99,8 +108,46 @@ The server responds to trace creation with an id (string) that you can correlate
         </table>
 
         <script type="text/javascript">
-            new DataTable('#traces', {
-                order: []
+            const table = new DataTable('#traces', {
+                order: [],
+                select: true,
+                layout: {
+                    topStart: {
+                        buttons: [
+                            {
+                                text: 'Select all rows',
+                                action: function () {
+                                    table.rows().select();
+                                }
+                            },
+                            {
+                                text: 'Unselect all rows',
+                                action: function () {
+                                    table.rows().deselect();
+                                }
+                            },
+                            {
+                                text: 'Delete selected rows()',
+                                action: async function () {
+                                    const data = table.rows({ selected: true }).data();
+                                    await fetch('/Traces/delete/@Model.Folder.FullName.Replace('\\', '/')', {
+                                          method: 'POST',
+                                          headers: { 'Content-Type': 'application/json; charset=utf-8'},
+                                          body: JSON.stringify(data.pluck(0).toArray())
+                                    })
+                                    window.location.reload();
+                                },
+                                enabled: false
+                            }
+                        ]
+                    }
+                }
+            });
+            table.column(0).visible(false);
+            table.on('select deselect', function () {
+                var selectedRows = table.rows({ selected: true }).count();
+
+                table.button(2).enable(selectedRows > 0);
             });
         </script>
     </div>

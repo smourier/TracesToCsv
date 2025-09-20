@@ -30,6 +30,53 @@ public sealed class TracesManager(
 
     public string DirectoryPath { get; } = Path.GetFullPath(options.Value.DirectoryPath);
 
+    public int Delete(Guid id, string url, IEnumerable<string> names)
+    {
+        ArgumentNullException.ThrowIfNull(names);
+        ArgumentNullException.ThrowIfNull(url);
+
+        var relativePath = ComputeSafeCategory(url) ?? string.Empty;
+        var name = id.ToString("N");
+        var path = Path.Combine(DirectoryPath, name, relativePath);
+        if (!Directory.Exists(path))
+            return 0;
+
+        var count = 0;
+        foreach (var entry in names)
+        {
+            var safeName = IOUtilities.NameToValidFileName(entry);
+            if (safeName == null)
+                continue;
+
+            var fullEntryPath = Path.Combine(path, safeName);
+            if (Directory.Exists(fullEntryPath))
+            {
+                try
+                {
+                    IOUtilities.WrapSharingViolations(() => Directory.Delete(fullEntryPath, true));
+                    count++;
+                }
+                catch (Exception ex)
+                {
+                    this.LogError("Error: " + ex);
+                }
+            }
+            else if (File.Exists(fullEntryPath))
+            {
+                try
+                {
+                    IOUtilities.WrapSharingViolations(() => File.Delete(fullEntryPath));
+                    count++;
+                }
+                catch (Exception ex)
+                {
+                    this.LogError("Error: " + ex);
+                }
+            }
+        }
+        return count;
+    }
+
     public string GetKey(Guid id)
     {
         if (id == Guid.Empty)
