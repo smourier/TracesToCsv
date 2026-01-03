@@ -1,5 +1,5 @@
 # TracesToCsv
-An ASP.NET Core 9+ application that continuously ingests lightweight trace payloads sent over HTTP(S) and converts them into downloadable CSV files.
+An ASP.NET Core 10+ application that continuously ingests lightweight trace payloads sent over HTTP(S) and converts them into downloadable CSV files.
 
 ## Features
 - Accepts traces via HTTPS PUT requests
